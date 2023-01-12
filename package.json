@@ -1,0 +1,47 @@
+{
+	"name": "api-ng",
+	"version": "1.0.0",
+	"description": "api-ng server",
+	"main": "main.js",
+	"scripts": {
+		"migrate": "knex migrate:latest",
+		"start1": "npm run migrate && ts-node app",
+		"start": "set NODE_ENV=development&& nodemon main.ts",
+		"host": "npm run build --omit=dev && node dist/main.js",
+		"build": "tsc",
+		"dev": "set NODE_ENV=development&& nodemon main.ts",
+		"prod": "export NODE_ENV=production&& nodemon main.ts",
+		"test": "ts-node test-manifest.ts"
+	},
+	"engines": {
+		"node": "18.x"
+	},
+	"private": true,
+	"author": "Business Card Associates",
+	"license": "(c) CERTIGNA",
+	"dependencies": {
+		"@fastify/formbody": "^7.4.0",
+		"@fastify/swagger": "^8.1.0",
+		"@fastify/swagger-ui": "^1.2.0",
+		"@peculiar/webcrypto": "^1.4.1",
+		"adm-zip": "^0.5.9",
+		"dotenv": "^16.0.3",
+		"fastify": "^4.10.2",
+		"foundation-ts": "^1.4.3",
+		"knex": "^2.3.0",
+		"objection": "^3.0.1",
+		"pg": "^8.8.0",
+		"puppeteer": "^19.2.2",
+		"ts-json-object": "^0.4.0",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.3",
+		"xadesjs": "^2.4.4"
+	},
+	"devDependencies": {
+		"@types/adm-zip": "^0.5.0",
+		"@types/node": "^18.11.9",
+		"install": "^0.13.0",
+		"nodemon": "^2.0.20",
+		"npm": "^9.1.2"
+	}
+}

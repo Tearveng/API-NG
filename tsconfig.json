@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+	  "allowUnreachableCode": false,
+	  "alwaysStrict": true,
+	  "experimentalDecorators": true,
+	  "emitDecoratorMetadata": true,
+	  "forceConsistentCasingInFileNames": true,
+	  "module": "commonjs",
+	  "moduleResolution": "node",
+	  "noFallthroughCasesInSwitch": true,
+	  "noImplicitAny": true,
+	  "noImplicitReturns": true,
+	  "noImplicitThis": true,
+	  "noUnusedLocals": true,
+	  "noUnusedParameters": true,
+	  "sourceMap": true,
+	  "skipLibCheck": true, /* we are obliged to do that in order to use xadesjs module. pass it to false every other day to verify all other types */
+	  "strict": true,
+	  "strictNullChecks": false,
+	  "esModuleInterop": true,
+	  "allowJs": true,
+	  "target": "esnext",
+	  "rootDir": "./",
+	  "outDir": "./dist",
+	  "lib": ["dom"],       /* Specify library files to be included in the compilation. */
+    "useUnknownInCatchVariables": false,
+	},
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "knexfile.js"],
+  "include": ["**/*.ts", "env-config.js"]
+}

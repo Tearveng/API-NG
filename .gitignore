@@ -1,0 +1,8 @@
+node_modules/
+dist/
+tests/
+package-lock.json
+.DS_Store
+.VSCodeCounter
+.idea/
+run/uploaded_files/

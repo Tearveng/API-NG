@@ -1,0 +1,2437 @@
+{
+	"openapi":"3.0.2",
+	"info": {
+		"title":"CERTIGNA Signature",
+		"version":"1.0"
+	},
+	"servers": [
+		{"url":"https://api.server.test"}
+	],
+	"components": {
+		"schemas": {
+			"AllTagsDict":{
+				"type":"object",
+				"properties":{
+					"cosign": { "$ref": "#/components/schemas/ObjectURLArray" },
+					"countersign": { "$ref": "#/components/schemas/ObjectURLArray" },
+					"ordered-cosign": { "$ref": "#/components/schemas/ObjectURLArray" },
+					"individual-sign": { "$ref": "#/components/schemas/ObjectURLArray" },
+					"approval": { "$ref": "#/components/schemas/ObjectURLArray" }
+				},
+				"additionalProperties": { "$ref": "#/components/schemas/ObjectURLArray" }
+			},
+			"ActorList":{
+				"oneOf": [
+					{
+						"type":"object",
+						"properties": {
+							 "actors":{ "$ref":"#/components/schemas/ObjectURLArray"}
+						}
+					},
+					{ "$ref":"#/components/schemas/AllTagsDict" }
+				]
+			},
+			"ActorResource": {
+				"description": "Actor resource",
+				"allOf": [
+					{"$ref":"#/components/schemas/ActorStructure"},
+					{
+						"type": "object",
+						"properties": {
+							"aid":{ "$ref":"#/components/schemas/ObjectID"},
+							"id":{ "$ref":"#/components/schemas/ObjectID"}
+						}
+					}
+				]
+			},
+			"ActorStructure":{
+				"type": "object",
+				"description": "Actor creation structure",
+				"properties": {
+					"adm-id":{ "type": "string" },
+					"name":{ "type": "string" },
+					"first-name":{ "type": "string" },
+					"country": {"$ref": "#/components/schemas/Country"},
+					"login":{ "type": "string" },
+					"email":{ "type": "string", "format": "email" },
+					"mobile":{ "type": "string" },
+					"roles": { "$ref":"#/components/schemas/RolesArray"},
+					"type":{ "$ref":"#/components/schemas/ActorType"},
+					"manifest-data": {"$ref": "#/components/schemas/ManifestData"},
+					"user-data":{"$ref": "#/components/schemas/UserData"}
+				},
+				"required": ["name", "type", "roles"]
+			},
+			"ActorType":{
+				"type": "integer",
+				"enum": [0, 1],
+				"description": "Actor's type:\n * `0` - Person\n * `1` - Legal entity\n",
+				"default": 0
+			},
+			"APIVerb":{
+				"description": "Used REST verbs in current API",
+				"type": "string",
+				"enum": ["DELETE", "GET", "PATCH", "POST", "PUT"]
+			},
+			"APIPath":{
+				"type": "object",
+				"description": "GetCapabilities api path object",
+				"properties": {
+					"path":{"type": "string", "format": "uri"},
+					"verbs":{
+						"type": "array", 
+						"items":{"$ref":"#/components/schemas/APIVerb"}
+					}
+				}
+			},
+			"ApprovalTag":{
+				"description": "Approval tag defined in configuration file",
+				"type":"string"
+			},
+			"AuthorityResource":{
+				"type": "object",
+				"description": "Certification Authority resource",
+				"properties": {
+					"caid":{ "$ref":"#/components/schemas/ObjectID"},
+					"cgu-version": { "type":"string"},
+					"name": { "type":"string"},
+					"long-name": { "type":"string"}
+				}
+			},
+			"Cardinality":{
+				"oneOf": [
+					{ "$ref": "#/components/schemas/UInt32" },
+					{
+						"type": "string",
+						"enum": ["one", "all"],
+						"description": "Formal scenario's step cardinaly"
+					}
+				]
+			},
+			"CertificateResource":{
+				"type": "object",
+				"description": "Certificate resource",
+				"properties": {
+					"actor":{ "$ref": "#/components/schemas/ObjectURL" },
+					"authority":{ "$ref":"#/components/schemas/ObjectID"},
+					"date":{ "$ref":"#/components/schemas/DateTime" },
+					"expires":{ "$ref":"#/components/schemas/DateTime" },
+					"session":{ "$ref":"#/components/schemas/ObjectID"},
+					"status":{ "$ref":"#/components/schemas/CertificateStatus"},
+					"SN": { "type":"string", "format":"bytes"},
+					"ttl":{ "$ref":"#/components/schemas/TTL"}
+				}
+			},
+			"CertificateStatus":{
+				"type": "integer",
+				"enum": [0, 1],
+				"description": "Certificate's status:\n * `0` - Expired certificate\n * `1` - Valid certificate\n",
+				"default": 1
+			},
+			"CGUResource": {
+				"type": "object",
+				"description": "CA CGU Informations",
+				"properties": {
+					"download-url":{ "$ref":"#/components/schemas/DownloadURL"},
+					"authority":{ "$ref":"#/components/schemas/ObjectURL"},
+					"session":{ "$ref":"#/components/schemas/ObjectURL"},
+					"actor":{ "$ref":"#/components/schemas/ObjectURL"},
+					"version": { "type":"string"},
+					"token": { "type":"string", "format": "byte"}
+				}
+			},
+			"ClosingSessionResource":{
+				"type": "object",
+				"description": "Closing session returned resource",
+				"properties": {
+					"status":{ "$ref":"#/components/schemas/SessionStatus" },
+					"date":{ "$ref":"#/components/schemas/DateTime" },
+					"expires":{ "$ref":"#/components/schemas/DateTime" },
+					"url":{ "$ref":"#/components/schemas/ObjectURL"}
+				},
+				"required": ["status"]
+			},
+			"Country": {
+				"type": "string",
+				"description": "Actor country (used for certificate generation)",
+				"enum": ["AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW"],
+				"default":"FR"
+			},
+			"DateTime": {
+				"type": "string",
+				"format": "date-time"
+			},
+			"DeletedURLResource": {
+				"description":"API standard URL return",
+				"type":"object",
+				"properties": {
+					"deleted":{ "$ref":"#/components/schemas/ObjectURL"}
+				}
+			},
+			"DownloadURL": {
+				"type": "string",
+				"format": "uri"
+			},
+			"DocumentList":{
+				"oneOf": [
+					{
+						"type":"object",
+						"properties": {
+							 "documents":{ "$ref":"#/components/schemas/ObjectURLArray"}
+						}
+					},
+					{ "$ref":"#/components/schemas/AllTagsDict" }
+				]
+			},
+			"DocumentResource":{
+				"description":"Document resource",
+				"allOf": [
+					{"$ref":"#/components/schemas/DocumentStructure"},
+					{
+						"type":"object",
+						"properties": {
+							"did":{ "$ref":"#/components/schemas/ObjectID"},
+							"id":{ "$ref":"#/components/schemas/ObjectID"},	
+							"status":{ "$ref":"#/components/schemas/DocumentStatus"}
+						}
+					}
+				]
+			},
+			"DocumentStatus":{
+				"type": "integer",
+				"enum": [1, 2, 3, 4, 5],
+				"description": "Document's status:\n * `1` - Genuine document\n * `2` - In approbation process document\n * `3` - Approved document\n * `4` - In signature process document\n * `5` - Signed document\n",
+				"default": 1
+			},
+			"DocumentStructure":{
+				"type":"object",
+				"description":"Document creation structure",
+				"properties": {
+					"file-name":{ "type": "string" },
+					"title":{ "type": "string" },
+					"abstract":{ "type": "string" },
+					"manifest-data": {"$ref": "#/components/schemas/ManifestData"},
+					"user-data":{"$ref": "#/components/schemas/UserData"}
+				},
+				"required": ["file-name", "title"]
+			},
+			"DocumentToSign":{
+				"oneOf": [
+					{ "$ref":"#/components/schemas/ObjectURLArray"},
+					{
+						"type":"object",
+						"properties": {
+							"document-url":{ "$ref":"#/components/schemas/ObjectURL"},
+							"visual-params":{ "$ref":"#/components/schemas/VisualSignatureParams"}
+						}
+					}
+				]
+			},
+			"ExpirationStatus":{
+				"description": "Request expiration status parameter:\n * `all` - all items (valid and expired)\n * `expired` - only expired items\n * `valid` - only valid items\n",
+				"type": "string", 
+				"enum": ["all", "expired", "valid"]
+			},
+			"ExpiringURLResource": {
+				"description":"API standard URL return",
+				"type":"object",
+				"properties": {
+					"url":{ "$ref":"#/components/schemas/ObjectURL"},
+					"date":{ "$ref":"#/components/schemas/DateTime" },
+					"expires":{ "$ref":"#/components/schemas/DateTime" }
+				}
+			},
+			"Image":{
+				"description": "Image as a base64 string",
+				"type": "string", 
+				"format": "byte"
+			},
+			"ManifestData": {
+				"type": "object",
+				"additionalProperties": { "type": "string" },
+				"default":{},
+				"description": "User can put any manifest data in here"
+			},
+			"Mesure":{
+				"description": "Geometric mesure for point or distance",
+				"type":"number",
+				"format": "double"
+			},
+			"ObjectID": {
+				"description": "Unique identifier",
+				"type": "integer",
+				"minimum": 1,
+				"default": 1
+			},
+			"ObjectIDArray":{
+				"type": "array",
+				"description": "Array of unique identifiers",
+				"items":{"$ref": "#/components/schemas/ObjectID" }
+			},
+			"ObjectURLArray": {
+				"type": "array",
+				"description": "Array of unique Object URLs",
+				"items":{"$ref": "#/components/schemas/ObjectURL" }
+	        },
+			"ObjectURL": {
+				"description": "Unique Object URL",
+				"type": "string",
+				"format": "uri"
+			},
+			"OTPResource":{
+				"type": "object",
+				"properties": {
+					"date":{ "$ref":"#/components/schemas/DateTime" },
+					"expires":{ "$ref":"#/components/schemas/DateTime" },
+					"otp":{ "$ref":  "#/components/schemas/OTP"}
+				}
+			},
+			"Role":{
+				"oneOf": [
+					{ "$ref":"#/components/schemas/SystemGenericSignatureRole" },
+					{ "$ref":"#/components/schemas/SystemSignatureRole" },
+					{ "$ref":"#/components/schemas/SystemApprovalRole" },
+					{ "$ref":"#/components/schemas/ApprovalTag" }
+				]
+			},
+			"RolesArray": {
+				"type": "array",
+				"items":{ "$ref":"#/components/schemas/Role"},
+				"description": "Array of approbation and signature roles"
+			},
+			"RootStepArray":{
+				"type":"array",
+				"items":{ "$ref":"#/components/schemas/Step"},
+				"minItems": 1,
+				"maxItems": 1
+			},
+			"SessionResource": {
+				"description":"Session resource",
+				"allOf": [
+					{"$ref":"#/components/schemas/SessionStructure"},
+					{
+						"type":"object",
+						"properties": {
+							"id":{ "$ref":"#/components/schemas/ObjectID"},
+							"status":{ "$ref":"#/components/schemas/SessionStatus" },
+							"actors":{ "$ref":"#/components/schemas/ObjectURLArray"},
+							"documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+							"scenarios":{ "$ref":"#/components/schemas/ObjectURLArray"}
+						},
+						"required": ["id", "status"]
+					}
+				]
+			},
+			"ScenarioResource":{
+				"description": "Scenario Resource",
+				"allOf": [
+					{"$ref":"#/components/schemas/ScenarioStructure"},
+					{
+						"type": "object",
+						"properties": {
+							"sid":{ "$ref":"#/components/schemas/ObjectID"},
+							"id":{ "$ref":"#/components/schemas/ObjectID"},
+							"status":{ "$ref":"#/components/schemas/ScenarioStatus" }
+						}
+					}
+				]
+			},
+			"ScenarioStatus":{
+				"type": "integer",
+				"enum": [1, 2, 4, 10, 11, 20, 21, 22],
+				"description": "Scenario's status:\n * `1` - Under construction scenario\n * `2` - After split under construction scenario\n * `4` - Active scenario\n * `10` - Well terminated scenario\n * `11` - After split well terminated scenario\n * `20` - Deleted scenario\n * `21` - Cancelled scenario\n * `22` - Cancelled scenario due to session's expiration\n"
+			},
+			"ScenarioStructure":{
+				"type":"object",
+				"description": "Scenario creation structure",
+				"properties": {
+					"documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+					"format":{ "$ref":  "#/components/schemas/SignatureFormat"},
+					"level":{ "$ref":  "#/components/schemas/SignatureLevel"},
+					"steps":{ "$ref":  "#/components/schemas/RootStepArray"},
+					"user-data":{"$ref": "#/components/schemas/UserData"},
+					"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+				},
+				"required": ["documents", "steps", "level", "format"]
+			},
+			"SessionStatus":{
+				"type":"integer",
+				"enum": [1, 2, 3, 4, 10, 20, 21],
+				"description": "Session's status:\n * `1` - Genuine session (just created)\n * `2` - Under construction session\n * `3` - Idle session\n * `4` - Active session\n * `10` - Well termined session\n * `11` - Well expired session\n * `20` - Deleted session (only genuine session are deleted)\n * `21` - Cancelled session\n * `22` - Expired session\n",
+				"default": 1
+			},
+			"SessionStructure":{
+				"type":"object",
+				"description": "Session creation structure",
+				"properties": {
+					"ttl":{ "$ref":"#/components/schemas/TTL"},
+					"manifest-data": {"$ref": "#/components/schemas/ManifestData"},
+					"user-data":{"$ref": "#/components/schemas/UserData"}
+				},
+				"required": ["ttl"]
+			},
+			"SignatureFormat":{
+				"type":"integer",
+				"enum": [1, 2, 3],
+				"description": "Signature's format:\n * `1` - PAdES signature\n * `2` - XAdES signature\n * `3` - CAdES signature\n"
+			},
+			"SignatureLevel":{
+				"type":"integer",
+				"enum": [1, 2, 3, 4],
+				"description": "Signature's levels:\n * `1 (B)` - Basic baseline profile\n * `2 (T)` - Timestamp baseline profile\n * `3 (LT)` - Long Term baseline profile\n * `4 (LTA)` - Long Term Archiving baseline profile\n"
+			},
+			"SignatureProcess":{
+				"oneOf": [
+					{ "$ref":"#/components/schemas/SystemSignatureRole" },
+					{ "$ref":"#/components/schemas/SystemApprovalRole" },
+					{ "$ref":"#/components/schemas/ApprovalTag" }
+				]
+			},
+			"SignatureProcessArray": {
+				"type": "array",
+				"items":{ "$ref":"#/components/schemas/SignatureProcess"},
+				"description": "Array of approbation and signature roles"
+			},
+			"SignatureResource":{
+				"type": "object",
+				"description": "Resource returned by an approval or a signature API",
+				"properties": {
+					"actor": { "$ref": "#/components/schemas/ObjectURL"},
+					"document": { "$ref": "#/components/schemas/ObjectURL"},
+					"signatureId": { "type":"string", "format": "uuid"},
+					"tag":{ "$ref":  "#/components/schemas/SignatureProcess"}
+				}
+			},			
+			"SignatureType":{
+				"type":"integer",
+				"enum": [1, 2, 3],
+				"description": "Signature's types:\n * `1` - envelopped signature\n * `2` - envelopping signature\n * `3` - detached signature\n"
+			},
+			"SigningResource":{
+				"type": "object",
+				"description": "Resource returned by an approval or a signature API",
+				"properties": {
+					"otp":{ "$ref":  "#/components/schemas/OTP"},
+					"signatures": {
+						"type":"array",
+						"items":{ "$ref":"#/components/schemas/SignatureResource"}
+					},
+					"threadId": { "type":"string", "format": "uuid"},
+					"token": { "type":"string", "format": "byte"}
+				},
+				"required": ["signatures", "threadId"]
+			},
+			"Step":{
+				"type": "object",
+				"description": "Real scenario's Step",
+				"properties": {
+					"process":{ "$ref":  "#/components/schemas/SignatureProcess"},
+					"signatureType":{ "$ref":  "#/components/schemas/SignatureType"},
+					"steps":{ "$ref":  "#/components/schemas/StepArray"},
+					"cardinality":{"$ref": "#/components/schemas/Cardinality"}
+				},
+				"required": ["process", "steps"]
+			},
+			"StepArray": {
+				"type":"array",
+				"items": { "$ref":"#/components/schemas/ObjectURL" },
+				"minItems": 1
+			},
+			"SystemGenericSignatureRole":{
+				"type":"string",
+				"enum": ["sign"],
+				"description":"Tag du rôle générique de signature"
+			},
+			"SystemSignatureRole":{
+				"type":"string",
+				"enum": ["sign", "cosign", "countersign", "ordered-cosign", "individual-sign"],
+				"description": "System signature roles:\n * `cosign` - M among N co-signature role\n * `coutersign` - M among N counter signature role\n * `ordered-cosign` - N actors ordered co-signature role (workflow oriented co-signature type)\n * `individual-sign` - individual M among N signature role\n"
+			},
+			"SystemApprovalRole":{
+				"type": "string",
+				"enum": ["approval"],
+				"description": "System approval roles:\n * `approval` - generic approbation role\n"
+			},
+			"SystemDestinationRole":{
+				"type": "string",
+				"enum": ["to", "cc"],
+				"description": "System recipient's roles:\n * `to` - main recipient\n * `cc` - carbon copy recipient\n"
+			},
+			"OTP": {
+				"type":"string",
+				"maxLength": 256,
+				"minLength": 3
+			},
+			"OTPLength": {
+				"type": "integer",
+				"format": "int32",
+				"minimum": 3,
+				"maximum": 256
+			},
+			"TextAlignment":{
+				"type": "integer",
+				"enum": [0, 1, 2],
+				"description": "Text alignment:\n * `0` - Left aligned\n * `1` - Centered\n * `1` - Right aligned\n",
+				"default": 0
+			},
+			"TTL": {
+				"type": "integer",
+				"format": "int32",
+				"minimum": 0,
+				"exclusiveMinimum": true,
+				"description": "Time To Live value in seconds"
+			},
+			"TTLDyn": {
+				"type": "integer",
+				"format": "int32",
+				"description": "Dynamic Time To Live value in seconds"
+			},
+			"UInt32": {
+				"type": "integer",
+				"format": "int32",
+				"minimum": 0
+			},
+			"URLResource": {
+				"description":"API standard URL return",
+				"type":"object",
+				"properties": {
+					"url":{ "$ref":"#/components/schemas/ObjectURL"},
+					"date":{ "$ref":"#/components/schemas/DateTime" }
+				}
+			},
+			"UserData": {
+				"type": "object",
+				"additionalProperties": true,
+				"default":{},
+				"description": "User can put any data in here"
+			},
+			"UserIDArray": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Array of connected user IDs"
+			},
+			"VisualSignatureParams":{
+				"description": "Signature's visual parameter",
+				"type": "object",
+				"properties": {
+					"font-size":{ "type": "number"},
+					"x":{"$ref":"#/components/schemas/Mesure"},
+					"y":{"$ref":"#/components/schemas/Mesure"},
+					"height":{"$ref":"#/components/schemas/Mesure"},
+					"width":{"$ref":"#/components/schemas/Mesure"},
+					"page-number":{"type": "integer"},
+					"text-align": {"$ref":"#/components/schemas/TextAlignment"},
+					"text":{"type": "string"},
+					"image-content":{"$ref":"#/components/schemas/Image" }
+				}
+			}
+		},
+		"parameters": {
+			"userID": {
+				"name": "CertignaUser",
+				"in": "header",
+				"description": "Certigna user ID",
+				"required": true,
+				"schema": {
+				  "type": "string",
+				  "default": "user"
+				}
+			},
+			"userRole": {
+				"name": "CertignaRole",
+				"in": "header",
+				"description": "Certigna user role",
+				"required": true,
+				"schema": {
+				  "type": "integer",
+				  "enum": [1, 2, 3, 4],
+				  "description": "Connected users' exclusives roles:\n * `1` - requester role (read-only role)\n * `2` - actor role (standard role)\n * `3` - maintenance role\n * `4` - system role (API internal maintenance role)\n",
+				  "default": 2
+				}
+			},
+			"userHash": {
+				"name": "CertignaHash",
+				"in": "header",
+				"description": "Certigna user hash",
+				"required": true,
+				"schema": {
+				  "type": "string",
+				  "format": "byte",
+				  "default":"WAxhZGRpdXZyZVRvaQ=="
+				}
+			},
+			"language": {
+				"name": "DefaultLanguage",
+				"in": "header",
+				"description": "Client's API language",
+				"required": false,
+				"schema": {
+				  "type": "string",
+				  "enum": ["en", "fr"],
+				  "default": "fr"
+				}
+			},
+			"version": {
+				"name": "vers",
+				"in": "path",
+				"description": "API version",
+				"required": true,
+				"schema": {
+				  "type": "string",
+				  "default": "1.0"
+				}
+			},
+			"actorID": {
+				"name": "aid",
+				"in": "path",
+				"description": "Actor's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"certificationAuthorityID": {
+				"name": "caid",
+				"in": "path",
+				"description": "Certification Authority's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"certificateID": {
+				"name": "cid",
+				"in": "path",
+				"description": "Certificate's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"documentID": {
+				"name": "did",
+				"in": "path",
+				"description": "Document's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"scenarioID": {
+				"name": "sid",
+				"in": "path",
+				"description": "Scenario's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"sessionPublicID": {
+				"name": "id",
+				"in": "path",
+				"description": "Session's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			},
+			"uploadID": {
+				"name": "uid",
+				"in": "path",
+				"description": "Upload's unique identifier",
+				"required": true,
+				"schema": { "$ref": "#/components/schemas/ObjectID" }
+			}
+		}
+	},
+	"paths": {
+		"/v{vers}/ca/{caid}": {
+			"get": {
+				"description": "Get Certification Authority object",
+				"operationId":"getCAByID",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/certificationAuthorityID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/AuthorityResource"}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"500": { "description": "Internal Error" }
+				}
+			}
+		},
+		"/v{vers}/ca/{caid}/cgu": {
+			"get": {
+				"description": "Get download URL of the current version of Certification Authority's CGU",
+				"operationId":"getCACGU",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/certificationAuthorityID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "session",
+						"in":"query",
+						"description": "session unique identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					},
+					{
+						"name": "actor",
+						"in":"query",
+						"description": "actor unique identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/CGUResource"}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"500": { "description": "Internal Error" }
+				}
+			}
+		},
+		"/v{vers}/cas": {
+			"get": {
+				"description": "Get the list of available certification authorities' URL",
+				"operationId":"getCAList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										 "certification-authorities":{ "$ref":"#/components/schemas/ObjectURLArray"}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/getCapabilities": {
+			"get":{
+				"description": "API list of paths",
+				"operationId":"getCapabilities",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										"version":{ "type": "string"},
+										"title": { "type": "string"},
+										"api-paths": {
+											"type":"array",
+											"items":{ "$ref":"#/components/schemas/APIPath"}
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"500": { "description": "Internal Error" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}": {
+			"get": {
+				"description": "Get session object",
+				"operationId":"getSessionByID",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's creation date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/SessionResource"}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/close": {
+			"put": {
+				"description": "Session closure method",
+				"operationId":"closeSession",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"force":{
+										"description": "If set, force session closure, even if there's an active scenario.",
+										"type": "boolean"
+									},
+									"reason": {
+										"description": "Explains the reason of the closure",
+										"type": "string"
+									},
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								},
+								"required": ["force", "reason"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { 
+						"description": "OK : session is closed but no Manifest was generated",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ClosingSessionResource"}
+							}
+						}
+					},
+					"201": { 
+						"description": "OK : session is closed and a Manifest was generated",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/DownloadURL" },
+								"description": "Manifest's download URL"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Manifest's download creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Manifest's download expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ClosingSessionResource"}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden because already closed or a scenario was active and force flag was set to false" },
+					"404": { "description": "Not Found" },
+					"422": { "description": "manifest-data object is not conform to closure-manifest-data definition" },
+					"500": { "description": "Internal Error" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/actor/{aid}": {
+			"get": {
+				"description": "Get actor object",
+				"operationId":"getSessionActorByID",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/actorID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ActorResource"}
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"500": { "description": "Internal Error" }
+				}
+			},
+			"delete": {
+				"description":"Remove an actor from a session",
+				"operationId":"removeSessionActor",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/documentID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK. The Actor was removed from the session",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DeletedURLResource" }
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"500": { "description": "Internal Error" }
+				}
+			}		
+		},
+		"/v{vers}/session/{id}/actors": {
+			"post": {
+				"description":"Add a new actor in current session",
+				"operationId":"addActorToSession",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{"$ref": "#/components/schemas/ActorStructure"}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "A new actor was added to the session",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the created actor"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Actor's creation date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict between legal entity and physical person" },
+					"422": { "description": "manifest-data object is not conform to actor-manifest-data definition" },
+					"500": { "description": "Internal Error" }
+				}
+			},
+			"get": {
+				"description": "Get list of actors added in the current session",
+				"operationId":"getSessionActorList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "tags",
+						"in":"query",
+						"description": "List of tags of roles in which capacity actors can act",
+						"schema":{ "$ref":"#/components/schemas/RolesArray"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ActorList" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/approve-documents": {
+			"put": {
+				"description": "Approve documents",
+				"operationId":"approveSessionDocuments",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"actor": { "$ref": "#/components/schemas/ObjectURL"},
+									"documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+									"authority": { "$ref": "#/components/schemas/ObjectURL"},
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								},
+								"required": ["actor", "documents", "otp"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK : Documents were approved", 
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/SigningResource"}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : given documents cannot be approved in current scenario step" },
+					"422": { "description": "manifest-data object is not conform to approve-manifest-data definition" }
+				}
+
+			}
+		},
+		"/v{vers}/session/{id}/certificate/{cid}": {
+			"get": {
+				"description": "Get certificate informations",
+				"operationId":"getSessionCertificateInformations",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/certificateID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Certificate's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Certificate's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/CertificateResource"}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			},
+			"delete": {
+				"description":"Remove an actor from a session",
+				"operationId":"removeSessionCertificate",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/certificateID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK. The Certificate was removed from the session",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DeletedURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}		
+		},
+		"/v{vers}/session/{id}/certificates": {
+			"post": {
+				"description":"Generate a new session in current session",
+				"operationId":"generateCertificateForSession",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"actor": { "$ref": "#/components/schemas/ObjectURL"},
+									"authority": { "$ref": "#/components/schemas/ObjectURL"},
+									"token":{ "type": "string", "format": "uuid"},
+									"supporting-documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+									"ttl":{"$ref": "#/components/schemas/TTL"}
+								},
+								"required": ["actor", "authority", "token"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "A new certificate was genarated for the given CA in the session for the specified actor",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the generated certificate"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Certificate's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Certificate's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : Certificate Authority, Actor and token do not match" },
+					"422": { "description": "A new certificate is asked but a previous one is valid for the same actor and the same token" }
+				}
+			},
+			"get": {
+				"description": "Get list of certificate generated the current session",
+				"operationId":"getSessionCertificateList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "ttlmin",
+						"in":"query",
+						"description": "minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "ttlmax",
+						"in":"query",
+						"description": "maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "dynttlmin",
+						"in":"query",
+						"description": "effective dynamic minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "dynttlmax",
+						"in":"query",
+						"description": "effective dynamic maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "caid",
+						"in":"query",
+						"description": "certification authority identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					},
+					{
+						"name": "actorids",
+						"in":"query",
+						"explode": false,
+						"description": "List of session actors",
+						"schema":{ "$ref":"#/components/schemas/ObjectIDArray"}
+					},
+					{
+						"name": "userids",
+						"in":"query",
+						"explode": false,
+						"description": "List of session user identifiers",
+						"schema":{ "$ref":"#/components/schemas/UserIDArray"}
+					},
+					{
+						"name": "expirationstatus",
+						"in":"query",
+						"description": "Statut d'expiration",
+						"schema":{ "$ref":"#/components/schemas/ExpirationStatus"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										 "certificates":{ "$ref":"#/components/schemas/ObjectURLArray"}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/check-otp": {
+			"put":{
+				"description": "check the validity of an OTP for an actor and a list of documents",
+				"operationId":"generateOTP",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"otp":{ "$ref": "#/components/schemas/OTP" },
+									"actor":{ "$ref": "#/components/schemas/ObjectURL" },
+									"documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+									"delete":{
+										"description": "If set and if the OTP is valid, the OTP will be destroyed.",
+										"type": "boolean"
+									}
+								},
+								"required": ["otp"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"oneOf":[
+										{
+											"type":"object",
+											"properties": {
+												"deleted":{ "$ref": "#/components/schemas/OTP" }
+											}
+										},
+										{
+											"type":"object",
+											"properties": {
+												"otp":{ "$ref": "#/components/schemas/OTP" },
+												"actor":{ "$ref": "#/components/schemas/ObjectURL" },
+												"documents":{ "$ref":"#/components/schemas/ObjectURLArray"}
+											}
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : passed documents' URL are not to be signed or approuved in current active scenario state"}
+				}
+			}
+		},
+		"/v{vers}/session/{id}/document/{did}": {
+			"get": {
+				"description": "Get document object",
+				"operationId":"getSessionDocumentByID",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/documentID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/DocumentResource"}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			},
+			"delete": {
+				"description":"Remove a document from a session",
+				"operationId":"removeSessionDocument",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/documentID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK. The Document was removed from the session",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DeletedURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/document/{did}/current": {
+			"get": {
+				"description": "Get URL for downloading the current version of a document",
+				"operationId":"getSessionDocumentCurrentVersionURL",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/documentID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "OK. Download for asked document was generated",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/DownloadURL" },
+								"description": "URL to download the document"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's download creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's download expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/document/{did}/genuine": {
+			"get": {
+				"description": "Get URL for downloading the genuine version of a document",
+				"operationId":"getSessionDocumentGenuineVersionURL",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/documentID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "OK. Download for asked document was generated",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/DownloadURL" },
+								"description": "URL to download the document"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's download creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's download expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/documents": {
+			"post": {
+				"description":"Add a new document in current session",
+				"operationId":"addDocumentToSession",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"allOf": [
+									{ "$ref": "#/components/schemas/DocumentStructure" },
+									{
+										"type":"object",
+										"properties": {
+											"upload": { "$ref": "#/components/schemas/ObjectURL"}
+										}
+									}
+								],
+								"required": ["upload"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "A new document was added to the session",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the newly created document"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Document's creation date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"400": { "description": "Bad Request" },
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : 'file-name' extension is incompatible with upload file type" },
+					"422": { "description": "manifest-data object is not conform to document-manifest-data definition" },
+					"500": { "description": "Internal Error" }
+				}
+			},
+			"get": {
+				"description": "Get the list of documents added in the current session",
+				"operationId":"getSessionDocumentList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "actor",
+						"in":"query",
+						"description": "document's actor unique identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					},
+					{
+						"name": "tags",
+						"in":"query",
+						"description": "List of tags of roles in which documents are implicated",
+						"schema":{ "$ref":"#/components/schemas/SignatureProcessArray"}
+					},
+					{
+						"name": "status_mask",
+						"in":"query",
+						"description": "research mask for document status",
+						"schema":{ "$ref":"#/components/schemas/UInt32"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DocumentList" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"422": { "description": "status_mask parameter was incorrect or set when actor or tags parameter was set **** va falloir revenir la dessus ****"}
+				}
+			}
+		},
+		"/v{vers}/session/{id}/extend": {
+			"put": {
+				"description": "Extend sesion's time to live",
+				"operationId": "extendSession",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"ttl":{"$ref": "#/components/schemas/TTL"}
+								},
+								"required": ["ttl"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { 
+						"description": "OK : new ttl is enforced", 
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "Session's URL"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's new expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "New ttl <= old ttl OR new ttl > ttl-max" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/generate-otp": {
+			"put":{
+				"description": "generate an OTP for an actor and a list of documents",
+				"operationId":"generateOTP",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"actor":{ "$ref": "#/components/schemas/ObjectURL" },
+									"documents":{ "$ref":"#/components/schemas/ObjectURLArray"},
+									"length":{ "$ref":"#/components/schemas/OTPLength"}
+								},
+								"required": ["actor", "documents"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "OTP's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "OTP's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/OTPResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : passed documents' URL are not to be signed or approuved in current active scenario state"}
+				}
+			}
+		},
+		"/v{vers}/session/{id}/manifest": {
+			"get": {
+				"description": "get session's manifest URL",
+				"operationId":"getSessionManifestURL",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "OK : A Manifest was generated (now or previously) and its download is available",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/DownloadURL" },
+								"description": "Manifest's download URL"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Manifest's download creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Manifest's download expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/scenario/{sid}": {
+			"get": {
+				"description": "Get scenario object",
+				"operationId":"getSessionScenarioByID",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Scenario's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ScenarioResource"}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			},
+			"patch":{
+				"description": "Update scenario object",
+				"operationId":"updateSessionScenario",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{"$ref":"#/components/schemas/ScenarioStructure"}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK: scenario was updated", 
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Scenario's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : step definition implicates actors whitch did not possess the necessary roles OR documents and steps definitions are incompatibles" },
+					"422": { "description": "manifest-data object is not conform to scenario-manifest-data" }
+				}
+			},
+			"delete": {
+				"description":"Remove an scenario from a session",
+				"operationId":"removeSessionScenario",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK. The Scenario was removed from the session",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DeletedURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}		
+		},
+		"/v{vers}/session/{id}/scenario/{sid}/activate": {
+			"put":{
+				"description": "Scenario activation method",
+				"operationId":"activateScenario",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { 
+						"description": "OK: scenario was activated", 
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Scenario's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"422": { "description": "manifest-data object is not conform to activate-manifest-data definition" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/scenario/{sid}/cancel": {
+			"put":{
+				"description": "Scenario cancellation method",
+				"operationId":"cancelScenario",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"reason": {
+										"description": "Explains the reason for cancelling the scenario",
+										"type": "string"
+									},
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								},
+								"required": ["reason"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": { 
+						"description": "OK: scenario was canceled", 
+						"headers": {
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Scenario's addition date"
+							},
+							"Last-Modified":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's last modification date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"422": { "description": "manifest-data object is not conform to cancel-manifest-data definition" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/scenario/{sid}/split": {
+			"put":{
+				"description": "Scenario split method",
+				"operationId":"splitScenario",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/scenarioID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"reason": {
+										"description": "Explains the reason for splitting the scenario",
+										"type": "string"
+									},
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								},
+								"required": ["reason"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": { 
+						"description": "A new scenario was created due to previous active scenario split",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the new created scenario due to the split"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "New splitted scenario's creation date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict: current scenario cannot be splitted because it has no step terminated"},
+					"422": { "description": "manifest-data object is not conform to scenario-manifest-data definition" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/scenarios": {
+			"post": {
+				"description":"Add a new scenario in current session",
+				"operationId":"addScenarioToSession",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{"$ref":"#/components/schemas/ScenarioStructure"}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "A new scenario was added to the session",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the created scenario"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Scenario's creation date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/URLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : step definition implicates actors whitch did not possess the necessary roles OR documents and steps definitions are incompatibles" },
+					"422": { "description": "manifest-data object is not conform to scenario-manifest-data" }
+				}
+			},
+			"get": {
+				"description": "Get the list of available scenarios in current session",
+				"operationId":"getSessionScenariosList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										 "scenarios":{ "$ref":"#/components/schemas/ObjectURLArray"}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/session/{id}/sign-documents": {
+			"put": {
+				"description": "Sign documents",
+				"operationId":"signSessionDocuments",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{
+								"type":"object",
+								"properties": {
+									"actor": { "$ref": "#/components/schemas/ObjectURL"},
+									"certificate": { "$ref": "#/components/schemas/ObjectURL"},
+									"documents":{
+										"type":"array",
+										"items":{"$ref":"#/components/schemas/DocumentToSign"} 
+									},
+									"otp": { "$ref": "#/components/schemas/OTP"},
+									"manifest-data":{"$ref": "#/components/schemas/ManifestData"}
+								},
+								"required": ["actor", "documents", "certificate"]
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/sessionPublicID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK : Documents were signed", 
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/SigningResource"}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" },
+					"409": { "description": "Conflict : given documents cannot be signed in current scenario step" },
+					"422": { "description": "manifest-data object is not conform to sign-manifest-data definition" }
+				}
+
+			}
+		},
+		"/v{vers}/sessions": {
+			"post": {
+				"description":"Create a new session",
+				"operationId":"createSession",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema":{ "$ref":"#/components/schemas/SessionStructure" }
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "A new session was created",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the created session"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Session's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"409": { "description": "ttl <= ttl-min OR ttl > ttl-max" },
+					"422": { "description": "manifest-data object is not conform to session-manifest-data definition" }
+				}
+			},
+			"get": {
+				"description": "Get the sessions list",
+				"operationId":"getSessionList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "ttlmin",
+						"in":"query",
+						"description": "minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "ttlmax",
+						"in":"query",
+						"description": "maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "dynttlmin",
+						"in":"query",
+						"description": "effective dynamic minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "dynttlmax",
+						"in":"query",
+						"description": "effective dynamic maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "idmin",
+						"in":"query",
+						"description": "minimal session identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					},
+					{
+						"name": "idmax",
+						"in":"query",
+						"description": "maximal session identifier",
+						"schema":{ "$ref":"#/components/schemas/ObjectID"}
+					},
+					{
+						"name": "userids",
+						"in":"query",
+						"explode": false,
+						"description": "List of session user identifiers",
+						"schema":{ "$ref":"#/components/schemas/UserIDArray"}
+					},
+					{
+						"name": "expirationstatus",
+						"in":"query",
+						"description": "Statut d'expiration",
+						"schema":{ "$ref":"#/components/schemas/ExpirationStatus"}
+					},
+					{
+						"name": "status_mask",
+						"in":"query",
+						"description": "research mask for session status",
+						"schema":{ "$ref":"#/components/schemas/UInt32"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										 "sessions":{ "$ref":"#/components/schemas/ObjectURLArray"}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/upload/{uid}": {
+			"delete": {
+				"description":"Remove a previously uploaded file",
+				"operationId":"deleteUpload",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/uploadID"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": { 
+						"description": "OK. Upload deleted",
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/DeletedURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/uploads": {
+			"post": {
+				"description":"Create a new upload",
+				"operationId":"uploadFile",
+				"requestBody":{
+					"required": true,
+					"content": {
+						"application/octet-stream": {
+							"schema":{
+								"type":"string",
+								"format":"bynary"
+							}
+						}
+					}
+				},
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"201": { 
+						"description": "File was correctly uploaded",
+						"headers": {
+							"Location":{
+								"schema": { "$ref": "#/components/schemas/ObjectURL" },
+								"description": "URL of the uploaded file"
+							},
+							"Date":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Upload's creation date"
+							},
+							"Expires":{
+								"schema": { "$ref": "#/components/schemas/DateTime" },
+								"description": "Upload's expiration date"
+							}
+						},
+						"content": {
+							"application/json": {
+								"schema":{ "$ref": "#/components/schemas/ExpiringURLResource" }
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"409": { "description": "Conflict" }
+				}
+			},
+			"get": {
+				"description": "Get the uploads list",
+				"operationId":"getUploadList",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"},
+					{
+						"name": "ttlmin",
+						"in":"query",
+						"description": "minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "ttlmax",
+						"in":"query",
+						"description": "maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTL"}
+					},
+					{
+						"name": "dynttlmin",
+						"in":"query",
+						"description": "effective dynamic minimal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "dynttlmax",
+						"in":"query",
+						"description": "effective dynamic maximal time to live",
+						"schema":{ "$ref":"#/components/schemas/TTLDyn"}
+					},
+					{
+						"name": "userids",
+						"in":"query",
+						"explode": false,
+						"description": "List of user identifiers which did upload files",
+						"schema":{ "$ref":"#/components/schemas/UserIDArray"}
+					},
+					{
+						"name": "expirationstatus",
+						"in":"query",
+						"description": "Statut d'expiration",
+						"schema":{ "$ref":"#/components/schemas/ExpirationStatus"}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										"uploads":{ "$ref":"#/components/schemas/ObjectURLArray"}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		},
+		"/v{vers}/uploads/accepted-extensions": {
+			"get": {
+				"description": "Get the uploads accepted extensions list",
+				"operationId":"getAcceptedExtensions",
+				"parameters": [
+					{ "$ref": "#/components/parameters/version"},
+					{ "$ref": "#/components/parameters/userID"},
+					{ "$ref": "#/components/parameters/userRole"},
+					{ "$ref": "#/components/parameters/userHash"},
+					{ "$ref": "#/components/parameters/language"}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema":{
+									"type":"object",
+									"properties": {
+										"accepted-extensions": {
+											"type":"object"
+										}
+									}
+								}
+							}
+						}
+					},
+					"403": { "description": "Forbidden" },
+					"404": { "description": "Not Found" }
+				}
+			}
+		}
+	}
+}
